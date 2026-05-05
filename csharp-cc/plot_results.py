@@ -1,19 +1,3 @@
-"""
-Побудова графіків для курсової роботи.
-
-Читає benchmark_results.csv (генерується QuickBenchmark при запуску
-опції 4 у CLI-меню) і будує три графіки:
-  1) plot_time.png    - час виконання по датасетах vs кількість потоків
-  2) plot_speedup.png - коефіцієнт прискорення vs кількість потоків
-  3) plot_density.png - порівняння часу для різних щільностей графа
-
-Запуск:
-  pip install matplotlib pandas
-  python plot_results.py
-
-Графіки зберігаються в поточній директорії як PNG (300 DPI).
-"""
-
 import csv
 import os
 import sys
@@ -104,7 +88,7 @@ def plot_time(data, out_path):
 
 
 def plot_speedup(data, out_path):
-    """Графік 2: коефіцієнт прискорення vs кількість потоків"""
+    """Графік 2: коефіцієнт прискорення vs кількість потоків (БЕЗ ідеальної лінії)"""
     fig, ax = plt.subplots(figsize=(10, 6))
 
     styles = {
@@ -114,21 +98,16 @@ def plot_speedup(data, out_path):
         "large":  ("D-", "#2ca02c"),
     }
 
-    max_workers = 0
     for ds_name, ds_data in data.items():
         if ds_name not in styles:
             continue
         marker, color = styles[ds_name]
         workers = sorted(ds_data["speedups"].keys())
-        max_workers = max(max_workers, max(workers))
         speedups = [ds_data["speedups"][w] for w in workers]
         label = f"{ds_name}"
         ax.plot(workers, speedups, marker, label=label, color=color, linewidth=2, markersize=8)
 
-    ideal_x = [1, 2, 4, 8, 16, 32]
-    ideal_x = [x for x in ideal_x if x <= max_workers]
-    ax.plot(ideal_x, ideal_x, "k--", alpha=0.4, linewidth=1, label="Ідеальне (S = N)")
-
+    # Цільова лінія (мінімальна планка)
     ax.axhline(y=1.2, color="red", linestyle=":", alpha=0.6, label="Ціль ТЗ: 1,2x")
 
     ax.set_xlabel("Кількість робочих потоків", fontsize=12)
@@ -199,25 +178,17 @@ def main():
     if not csv_path:
         print()
         print("ПОМИЛКА: не знайдено benchmark_results.csv.")
-        print("Спочатку запустіть бенчмарк через CLI (опція 4).")
         sys.exit(1)
 
-    print(f"  Читаю CSV: {csv_path}")
     data = read_data(csv_path)
-    print(f"  Знайдено датасетів: {len(data)}")
-    for ds in data:
-        print(f"    - {ds}: N={data[ds]['nodes']:,}, M={data[ds]['edges']:,}")
-
     out_dir = os.path.dirname(csv_path)
-    print()
-    print("  Будую графіки...")
+
     plot_time(data, os.path.join(out_dir, "plot_time.png"))
     plot_speedup(data, os.path.join(out_dir, "plot_speedup.png"))
     plot_density(data, os.path.join(out_dir, "plot_density.png"))
 
     print()
-    print("  Готово! Графіки збережено у:", out_dir)
-    print("  Тепер їх можна вставити у курсову замість плейсхолдерів рисунків.")
+    print("  Готово! Графіки збережено.")
 
 
 if __name__ == "__main__":
