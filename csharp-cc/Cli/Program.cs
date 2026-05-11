@@ -115,7 +115,7 @@ internal static class Program
 
         Console.WriteLine();
         Console.WriteLine("Виберіть алгоритм:");
-        Console.WriteLine("  1) sequential (DFS)");
+        Console.WriteLine("  1) sequential (однопотоковий, класичний Union-Find)");
         Console.WriteLine("  2) parallel (Lock-free Union-Find)");
         Console.WriteLine("  3) обидва (для порівняння)");
         Console.Write("Ваш вибір (Enter для 'обидва'): ");
